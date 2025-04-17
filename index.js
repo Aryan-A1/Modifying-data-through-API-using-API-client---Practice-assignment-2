@@ -1,15 +1,33 @@
+require('dotenv').config();
 const express = require('express');
-const { resolve } = require('path');
+const mongoose = require('mongoose');
+const menuRoutes = require('./routes/menuRoutes');
 
 const app = express();
-const port = 3010;
+const port = process.env.PORT || 3010;
 
-app.use(express.static('static'));
+// Middleware
+app.use(express.json());
 
+// Database connection
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB Atlas'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Routes
+app.use('/menu', menuRoutes);
+
+// Basic route
 app.get('/', (req, res) => {
-  res.sendFile(resolve(__dirname, 'pages/index.html'));
+  res.send('Menu API is running');
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });
